@@ -1,0 +1,38 @@
+name: Test
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+env:
+  GOPRIVATE: github.com/wakelet
+jobs:
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.17.x"
+      - name: Vet
+        run: |
+          go vet ./...
+        working-directory: ./backend
+      - name: Format
+        run: |
+          go fmt ./...
+        working-directory: ./backend
+      - name: Test
+        run: |
+          go test ./...
+        working-directory: ./backend
+      - uses: reviewdog/action-staticcheck@v1
+        name: Lint
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: nofilter
+          workdir: ./backend
+          fail_on_error: true
+
